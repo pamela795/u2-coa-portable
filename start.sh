@@ -47,8 +47,8 @@ echo "⏳ Waiting for deployment and TensorRT engine compilation (up to 15 minut
 SECONDS=0
 while true; do
     if kubectl -n dlc get pods -l app=dlc-standard --no-headers | grep -q Running; then
-        # Check health endpoint
-        if curl -s --max-time 2 http://localhost:80/api/health | grep -q '"status":"ok"'; then
+        # Check health endpoint (corrected to root path per RC1 source)
+        if curl -s --max-time 2 http://localhost:80/ | grep -q "<html"; then
             echo ""
             echo "✅ U²-COA is LIVE!"
             echo "   Open in browser: http://localhost"
