@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dlc-standard
+  namespace: dlc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dlc-standard
+  template:
+    metadata:
+      labels:
+        app: dlc-standard
+    spec:
+      containers:
+      - name: dlc
+        image: dlc-standard:latest
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 3478
+          name: webrtc
+          protocol: UDP
+        env:
+        - name: MODEL_ENGINE
+          value: "inswapper"
+        - name: USE_TENSORRT
+          value: "true"
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+          requests:
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: model-cache
+          mountPath: /root/.insightface
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 80
+          initialDelaySeconds: 90
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 10
+      volumes:
+      - name: model-cache
+        hostPath:
+          path: /var/lib/rancher/k3s/dl-models
+          type: DirectoryOrCreate
